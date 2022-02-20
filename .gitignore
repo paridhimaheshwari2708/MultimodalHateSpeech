@@ -1,2 +1,7 @@
+*.png
+
 tokens.json
 __pycache__
+
+HatefulMemesDataset
+ServerRequests

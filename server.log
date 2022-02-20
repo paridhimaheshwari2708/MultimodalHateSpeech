@@ -1,0 +1,22 @@
+ * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+ * Running on http://172.24.75.228:8080/ (Press CTRL+C to quit)
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 483-365-715
+----------------------------------------------------------------------------------------------------
+Text: you can't be racist if there is no other race
+Image URL: http://turing4.stanford.edu:8081/img/01247.png
+Image Path: ServerRequests/2022-02-20-14-24-48-f74c5a23-db6f-4556-9923-a941795d385a.png
+Probability of Hateful: 0.93
+----------------------------------------------------------------------------------------------------
+10.130.8.139 - - [20/Feb/2022 14:24:50] "GET /?text=you%20can%27t%20be%20racist%20if%20there%20is%20no%20other%20race&image=http://turing4.stanford.edu:8081/img/01247.png HTTP/1.1" 200 -
+10.130.8.139 - - [20/Feb/2022 14:24:50] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+ * Detected change in '/lfs/turing4/0/paridhi/MultimodalHateSpeech/server.py', reloading
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 483-365-715
+ * Detected change in '/lfs/turing4/0/paridhi/MultimodalHateSpeech/inference.py', reloading
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 483-365-715
