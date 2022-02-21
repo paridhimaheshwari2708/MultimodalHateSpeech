@@ -1,0 +1,127 @@
+ * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+ * Running on http://172.24.75.228:8080/ (Press CTRL+C to quit)
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 483-365-715
+----------------------------------------------------------------------------------------------------
+Text: you can't be racist if there is no other race
+Image URL: http://turing4.stanford.edu:8081/img/01247.png
+Image Path: ServerRequests/2022-02-20-14-24-48-f74c5a23-db6f-4556-9923-a941795d385a.png
+Probability of Hateful: 0.93
+----------------------------------------------------------------------------------------------------
+10.130.8.139 - - [20/Feb/2022 14:24:50] "GET /?text=you%20can%27t%20be%20racist%20if%20there%20is%20no%20other%20race&image=http://turing4.stanford.edu:8081/img/01247.png HTTP/1.1" 200 -
+10.130.8.139 - - [20/Feb/2022 14:24:50] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+ * Detected change in '/lfs/turing4/0/paridhi/MultimodalHateSpeech/server.py', reloading
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 483-365-715
+ * Detected change in '/lfs/turing4/0/paridhi/MultimodalHateSpeech/inference.py', reloading
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 483-365-715
+10.31.99.105 - - [20/Feb/2022 14:45:50] "[35m[1mGET / HTTP/1.1[0m" 500 -
+10.31.99.105 - - [20/Feb/2022 14:45:50] "GET /?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1" 200 -
+10.31.99.105 - - [20/Feb/2022 14:45:50] "GET /?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1" 200 -
+10.31.99.105 - - [20/Feb/2022 14:45:50] "GET /?__debugger__=yes&cmd=resource&f=ubuntu.ttf HTTP/1.1" 200 -
+10.31.99.105 - - [20/Feb/2022 14:45:50] "GET /?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1" 200 -
+10.31.99.105 - - [20/Feb/2022 14:45:51] "GET /?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1" 200 -
+10.31.99.105 - - [20/Feb/2022 14:45:54] "[35m[1mGET /?text= HTTP/1.1[0m" 500 -
+10.31.99.105 - - [20/Feb/2022 14:45:55] "GET /?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1" 200 -
+10.31.99.105 - - [20/Feb/2022 14:45:55] "GET /?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1" 200 -
+10.31.99.105 - - [20/Feb/2022 14:45:55] "GET /?__debugger__=yes&cmd=resource&f=ubuntu.ttf HTTP/1.1" 200 -
+10.31.99.105 - - [20/Feb/2022 14:45:55] "GET /?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1" 200 -
+10.31.99.105 - - [20/Feb/2022 14:45:57] "[35m[1mGET /?text=you HTTP/1.1[0m" 500 -
+10.31.99.105 - - [20/Feb/2022 14:45:57] "GET /?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1" 200 -
+10.31.99.105 - - [20/Feb/2022 14:45:57] "GET /?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1" 200 -
+10.31.99.105 - - [20/Feb/2022 14:45:57] "GET /?__debugger__=yes&cmd=resource&f=ubuntu.ttf HTTP/1.1" 200 -
+10.31.99.105 - - [20/Feb/2022 14:45:57] "GET /?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1" 200 -
+10.31.115.194 - - [20/Feb/2022 15:32:54] "[35m[1mGET / HTTP/1.1[0m" 500 -
+10.31.115.194 - - [20/Feb/2022 15:32:54] "GET /?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1" 200 -
+10.31.115.194 - - [20/Feb/2022 15:32:54] "GET /?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1" 200 -
+10.31.115.194 - - [20/Feb/2022 15:32:54] "GET /?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1" 200 -
+10.31.115.194 - - [20/Feb/2022 15:32:54] "GET /?__debugger__=yes&cmd=resource&f=ubuntu.ttf HTTP/1.1" 200 -
+10.31.115.194 - - [20/Feb/2022 15:32:54] "GET /?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1" 200 -
+10.31.99.105 - - [20/Feb/2022 16:05:01] "[35m[1mGET / HTTP/1.1[0m" 500 -
+10.31.99.105 - - [20/Feb/2022 16:05:02] "GET /?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1" 200 -
+10.31.99.105 - - [20/Feb/2022 16:05:02] "GET /?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1" 200 -
+10.31.99.105 - - [20/Feb/2022 16:05:02] "GET /?__debugger__=yes&cmd=resource&f=ubuntu.ttf HTTP/1.1" 200 -
+10.31.99.105 - - [20/Feb/2022 16:05:02] "GET /?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1" 200 -
+10.31.99.105 - - [20/Feb/2022 16:05:44] "[35m[1mGET /?text= HTTP/1.1[0m" 500 -
+10.31.99.105 - - [20/Feb/2022 16:05:44] "GET /?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1" 200 -
+10.31.99.105 - - [20/Feb/2022 16:05:44] "GET /?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1" 200 -
+10.31.99.105 - - [20/Feb/2022 16:05:44] "GET /?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1" 200 -
+10.31.99.105 - - [20/Feb/2022 16:05:44] "GET /?__debugger__=yes&cmd=resource&f=ubuntu.ttf HTTP/1.1" 200 -
+----------------------------------------------------------------------------------------------------
+Text: http://turing4.stanford.edu:8080/?text=you can't be racist if there is no other race
+Image URL: http://turing4.stanford.edu:8081/img/01247.png
+Image Path: ServerRequests/2022-02-20-16-05-49-684ff6d2-9e45-4ab3-bf73-8dd80556a392.png
+Probability of Hateful: 0.95
+----------------------------------------------------------------------------------------------------
+10.31.99.105 - - [20/Feb/2022 16:05:51] "GET /?text=http://turing4.stanford.edu:8080/?text=you%20can%27t%20be%20racist%20if%20there%20is%20no%20other%20race&image=http://turing4.stanford.edu:8081/img/01247.png HTTP/1.1" 200 -
+10.31.99.105 - - [20/Feb/2022 16:05:51] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+----------------------------------------------------------------------------------------------------
+Text: you can't be racist if there is no other race
+Image URL: http://turing4.stanford.edu:8081/img/01247.png
+Image Path: ServerRequests/2022-02-20-16-06-59-466418dc-64bb-4ca0-8c97-26a6da16d3f3.png
+Probability of Hateful: 0.93
+----------------------------------------------------------------------------------------------------
+10.31.99.105 - - [20/Feb/2022 16:07:01] "GET /?text=you%20can%27t%20be%20racist%20if%20there%20is%20no%20other%20race&image=http://turing4.stanford.edu:8081/img/01247.png HTTP/1.1" 200 -
+10.31.99.105 - - [20/Feb/2022 16:08:45] "[35m[1mGET / HTTP/1.1[0m" 500 -
+10.31.99.105 - - [20/Feb/2022 16:08:45] "GET /?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1" 200 -
+10.31.99.105 - - [20/Feb/2022 16:08:45] "GET /?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1" 200 -
+10.31.99.105 - - [20/Feb/2022 16:08:45] "GET /?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1" 200 -
+10.31.99.105 - - [20/Feb/2022 16:08:45] "GET /?__debugger__=yes&cmd=resource&f=ubuntu.ttf HTTP/1.1" 200 -
+ * Running on all addresses.
+   WARNING: This is a development server. Do not use it in a production deployment.
+ * Running on http://172.24.75.228:8080/ (Press CTRL+C to quit)
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 483-365-715
+10.130.8.139 - - [20/Feb/2022 16:24:19] "[35m[1mGET / HTTP/1.1[0m" 500 -
+10.130.8.139 - - [20/Feb/2022 16:24:19] "GET /?__debugger__=yes&cmd=resource&f=debugger.js HTTP/1.1" 200 -
+10.130.8.139 - - [20/Feb/2022 16:24:19] "GET /?__debugger__=yes&cmd=resource&f=style.css HTTP/1.1" 200 -
+10.130.8.139 - - [20/Feb/2022 16:24:19] "GET /?__debugger__=yes&cmd=resource&f=ubuntu.ttf HTTP/1.1" 200 -
+10.130.8.139 - - [20/Feb/2022 16:24:19] "GET /?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1" 200 -
+10.130.8.139 - - [20/Feb/2022 16:24:19] "GET /?__debugger__=yes&cmd=resource&f=console.png HTTP/1.1" 200 -
+----------------------------------------------------------------------------------------------------
+Text: you can't be racist if there is no other race
+Image URL: http://turing4.stanford.edu:8081/img/01247.png
+Image Path: ServerRequests/2022-02-20-16-24-41-faceea82-8512-488f-a6ff-d54363558dcf.png
+Probability of Hateful: 0.93
+----------------------------------------------------------------------------------------------------
+10.130.8.139 - - [20/Feb/2022 16:24:43] "GET /?text=you%20can%27t%20be%20racist%20if%20there%20is%20no%20other%20race&image=http://turing4.stanford.edu:8081/img/01247.png HTTP/1.1" 200 -
+10.130.8.139 - - [20/Feb/2022 16:24:43] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+----------------------------------------------------------------------------------------------------
+Text: you can't be racist if there is no other race
+Image URL: http://turing4.stanford.edu:8081/img/01247.png
+Image Path: ServerRequests/2022-02-20-16-57-04-97d973f7-8956-4db8-b70c-151cf7b10fbd.png
+Probability of Hateful: 0.93
+----------------------------------------------------------------------------------------------------
+127.0.0.1 - - [20/Feb/2022 16:57:06] "GET /?text=you%20can't%20be%20racist%20if%20there%20is%20no%20other%20race&image=http://turing4.stanford.edu:8081/img/01247.png HTTP/1.1" 200 -
+----------------------------------------------------------------------------------------------------
+Text: you can't be racist if there is no other race
+Image URL: http://turing4.stanford.edu:8081/img/01247.png
+Image Path: ServerRequests/2022-02-20-16-57-41-af99cd49-bdf3-4089-af7a-8b6a2c6b2672.png
+Probability of Hateful: 0.93
+----------------------------------------------------------------------------------------------------
+127.0.0.1 - - [20/Feb/2022 16:57:42] "GET /?text=you%20can't%20be%20racist%20if%20there%20is%20no%20other%20race&image=http://turing4.stanford.edu:8081/img/01247.png HTTP/1.1" 200 -
+----------------------------------------------------------------------------------------------------
+Text: you can't be racist if there is no other race
+Image URL: http://turing4.stanford.edu:8081/img/01247.png
+Image Path: ServerRequests/2022-02-20-16-58-38-2aa90c55-8edc-4c03-bcc9-0ee57104ad57.png
+Probability of Hateful: 0.93
+----------------------------------------------------------------------------------------------------
+127.0.0.1 - - [20/Feb/2022 16:58:42] "GET /?text=you%20can't%20be%20racist%20if%20there%20is%20no%20other%20race&image=http://turing4.stanford.edu:8081/img/01247.png HTTP/1.1" 200 -
+ * Detected change in '/lfs/turing4/0/paridhi/MultimodalHateSpeech/server.py', reloading
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 483-365-715
+ * Detected change in '/lfs/turing4/0/paridhi/MultimodalHateSpeech/server.py', reloading
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 483-365-715
+ * Detected change in '/lfs/turing4/0/paridhi/MultimodalHateSpeech/server.py', reloading
+ * Restarting with stat
+ * Debugger is active!
+ * Debugger PIN: 483-365-715
