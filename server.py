@@ -15,7 +15,21 @@ logger = logging.getLogger('werkzeug') # grabs underlying WSGI logger
 handler = logging.FileHandler('server.log') # creates handler for the log file
 logger.addHandler(handler) # adds handler to the werkzeug WSGI logger
 
-# http://turing4.stanford.edu:8080/?text=you can't be racist if there is no other race&image=http://turing4.stanford.edu:8081/img/01247.png
+'''
+*CALLING THE SERVER IN BROWSER*
+Template: http://turing4.stanford.edu:8080/?text=<ADD_TEXT_HERE>&image=<ADD_IMAGE_URL_HERE>
+Sample: http://turing4.stanford.edu:8080/?text=you can't be racist if there is no other race&image=http://turing4.stanford.edu:8081/img/01247.png
+
+*CALLING THE SERVER PROGRAMMATICALLY FROM PYTHON*
+import requests
+
+text = "you can't be racist if there is no other race"
+image_path = "http://turing4.stanford.edu:8081/img/01247.png"
+
+query_to_server = f"http://turing4.stanford.edu:8080/?text={text}&image={image_path}"
+output = requests.get(query_to_server).json()
+print(output)
+'''
 
 @app.route('/')
 def infer():
