@@ -6,6 +6,12 @@ class State(Enum):
     REPORT_START = auto()
     AWAITING_MESSAGE = auto()
     MESSAGE_IDENTIFIED = auto()
+    CHOOSE_TYPE = auto()
+    CHOOSE_CATEGORY = auto()
+    GENERAL_CATEGORY = auto()
+    SOMETHING_ELSE_CATEGORY = auto()
+    CHOOSE_ACTIONS = auto()
+    SUBMIT_REPORT = auto()
     REPORT_COMPLETE = auto()
 
 class Report:
@@ -25,7 +31,7 @@ class Report:
         get you started and give you a model for working with Discord. 
         '''
 
-        if message.content == self.CANCEL_KEYWORD:
+        if message.content.lower() == self.CANCEL_KEYWORD:
             self.state = State.REPORT_COMPLETE
             return ["Report cancelled."]
         
@@ -52,14 +58,62 @@ class Report:
                 message = await channel.fetch_message(int(m.group(3)))
             except discord.errors.NotFound:
                 return ["It seems this message was deleted or never existed. Please try again or say `cancel` to cancel."]
-
-            # Here we've found the message - it's up to you to decide what to do next!
+            
             self.state = State.MESSAGE_IDENTIFIED
-            return ["I found this message:", "```" + message.author.name + ": " + message.content + "```", \
-                    "This is all I know how to do right now - it's up to you to build out the rest of my reporting flow!"]
+            # Here we've found the message - it's up to you to decide what to do next!
         
         if self.state == State.MESSAGE_IDENTIFIED:
-            return ["<insert rest of reporting flow here>"]
+            reply = "I found this message:" + "```" + message.author.name + ": " + message.content + "```"
+            # reply =  "What is wrong with this image?"
+            reply += "Please select what is wrong with this message: `spam`, `violence/harmful behavior`, `hate speech`, `misinformation`."
+            self.state = State.CHOOSE_TYPE
+            return [reply]
+
+        if self.state == State.CHOOSE_TYPE:
+            if message.content.lower() == "spam" or \
+            message.content.lower() == "violence/harmful behavior" or \
+            message.content.lower() == "misinformation":
+                self.state = State.CHOOSE_ACTIONS
+                reply = "You have reported this message for "+ message.content + "\n"
+                reply += "Please review these documents for support on hate speech and our platform policies."
+                reply += "Choose action: `receive notifications`, `block` and `limit content`."
+                return [reply]
+            elif message.content.lower() == "hate speech":
+                self.state = State.CHOOSE_CATEGORY
+                return ["Choose the category of hate speech: `race/ethinicity`, `religion`, `gender identity`, `sexual orientation` and `something else`."]
+            else:
+                return ["Incorrect type. Please select from `spam`, `violence/harmful behavior`, `hate speech`, `misinformation`."]
+
+        if self.state == State.CHOOSE_CATEGORY:
+            if message.content.lower() == "something else":
+                self.state = State.SOMETHING_ELSE_CATEGORY
+                return ["Briefly describe the problem."]
+            elif message.content.lower() == "race/ethinicity" or \
+            message.content.lower() == "religion" or \
+            message.content.lower() == "gender identity" or \
+            message.content.lower() == "sexual orientation": 
+                self.state = State.SUBMIT_REPORT
+                reply = "You have reported this message for "+ message.content + "\n"
+                reply += "Please review these documents for support on " + message.content + " and our platform policies."
+                reply += "Choose action: `receive notifications`, `block` and `limit content`."
+                return [reply]
+            else:
+                return ["Incorrect Category. Please select from `race/ethinicity`, `religion`, `gender identity`, `sexual orientation` and `something else`."]
+        
+        if self.state == State.SOMETHING_ELSE_CATEGORY:
+            reply = "Thank you for describing the problem."
+            reply += "Please review these documents for support on hate speech and our platform policies."
+            reply += "Choose action: `receive notifications`, `block` and `limit content`."
+            self.state = State.SUBMIT_REPORT
+            return [reply]
+
+        if self.state == State.SUBMIT_REPORT:
+            if message.content.lower() in ["receive notifications", "block", "limit content"]:
+                reply = "Thank you for reporting. Our team will review the message and take action, including disabling the account of the user if necessary."
+                self.state = State.REPORT_COMPLETE
+                return [reply]
+            else:
+                return ["Incorrect selection. Please select from "]
 
         return []
 
