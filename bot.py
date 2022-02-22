@@ -4,6 +4,7 @@ import logging
 import os
 import re
 from enum import Enum, auto
+from unidecode import unidecode
 
 import discord
 import requests
@@ -140,7 +141,12 @@ class ModBot(discord.Client):
         await mod_channel.send(f'Forwarded message:\n{message.author.name}: "{message.content}"')
 
         scores = self.eval_text(message)
-        await mod_channel.send(self.code_format(json.dumps(scores, indent=2)))
+        sorted_scores = {
+            k: v for k, v in sorted(scores.items(), key=lambda item: item[1])}
+        if list(reversed(sorted_scores.values()))[0] > 0.8:
+            await mod_channel.send("Message flagged by automated "
+                                   "detection: %s" % message.jump_url)
+            await mod_channel.send(self.code_format(json.dumps(scores, indent=2)))
 
     async def on_raw_message_edit(self, payload):
         message = payload.cached_message
@@ -156,6 +162,7 @@ class ModBot(discord.Client):
         Given a message, forwards the message to Perspective and returns a dictionary of scores.
         '''
         PERSPECTIVE_URL = 'https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze'
+        message.content = unidecode(message.content)
 
         url = PERSPECTIVE_URL + '?key=' + self.perspective_key
         data_dict = {
