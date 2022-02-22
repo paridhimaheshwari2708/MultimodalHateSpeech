@@ -23,10 +23,13 @@ class Report:
     CANCEL_KEYWORD = "cancel"
     HELP_KEYWORD = "help"
 
-    def __init__(self, client):
+    def __init__(self, client, mod_channel):
         self.state = State.REPORT_START
         self.client = client
         self.message = None
+        self.mod_channel = mod_channel
+        self.reported_message_link = None
+        self.reported_message = None
 
     async def handle_message(self, message):
         '''
@@ -61,7 +64,9 @@ class Report:
                 return [
                     "It seems this channel was deleted or never existed. Please try again or say `cancel` to cancel."]
             try:
+                self.reported_message_link = message.content
                 message = await channel.fetch_message(int(m.group(3)))
+                self.reported_message = message
             except discord.errors.NotFound:
                 return [
                     "It seems this message was deleted or never existed. Please try again or say `cancel` to cancel."]
@@ -120,10 +125,17 @@ class Report:
         if self.state == State.SUBMIT_REPORT:
             if message.content.lower() in ["receive notifications", "block", "limit content"]:
                 reply = "Thank you for reporting. Our team will review the message and take action, including disabling the account of the user if necessary."
+                mod_channel = self.mod_channel
+                await mod_channel.send("Report submitted for: %s\n\n```Message: %s"
+                                       " author: %s```" %
+                                       (self.reported_message_link,
+                                        self.reported_message.content,
+                                        self.reported_message.author.name))
                 self.state = State.REPORT_COMPLETE
                 return [reply]
             else:
-                return ["Incorrect selection. Please select from "]
+                return ["Incorrect selection. Please select from `receive notifications`,"
+                        " `block` and `limit content`"]
 
         return []
 
