@@ -4,13 +4,14 @@ import logging
 import os
 import re
 from enum import Enum, auto
-from unidecode import unidecode
-
+from queue import PriorityQueue
 import discord
 import requests
+from unidecode import unidecode
 
 from report import Report
 from review import Review
+
 
 # Set up logging to the console
 logger = logging.getLogger('discord')
@@ -47,6 +48,7 @@ class ModBot(discord.Client):
         self.reviews = {}
         self.perspective_key = key
         self.mode = None
+        self.pending_reports = PriorityQueue()
 
     async def on_ready(self):
         print(f'{self.user.name} has connected to Discord! It is these guilds:')
@@ -108,21 +110,29 @@ class ModBot(discord.Client):
             # Let the report class handle this message; forward all the messages it returns to uss
             responses = await self.reports[author_id].handle_message(message)
             for r in responses:
-                await message.channel.send(r)
+                if isinstance(r, dict):
+                    await message.channel.send(r["content"], embed = r["embed"])
+                else:
+                    await message.channel.send(r)
+                   
 
             # If the report is complete or cancelled, remove it from our map
             if self.reports[author_id].report_complete():
                 self.mode = None
                 self.reports.pop(author_id)
 
-        elif self.mode == Mode.REVIEW or message.content.startswith(Review.START_KEYWORD):
+        elif self.mode == Mode.REVIEW or message.content.startswith(Review.START_KEYWORD) or \
+            message.content.startswith(Review.CONTINUE_KEYWORD):
             self.mode = Mode.REVIEW
             if author_id not in self.reviews:
                 self.reviews[author_id] = Review(self)
 
             reviews = await self.reviews[author_id].handle_message(message)
             for r in reviews:
-                await message.channel.send(r)
+                if isinstance(r, dict):
+                    await message.channel.send(r["content"], embed = r["embed"])
+                else:
+                    await message.channel.send(r)
 
             if self.reviews[author_id].review_complete():
                 self.mode = None
@@ -138,15 +148,21 @@ class ModBot(discord.Client):
 
         # Forward the message to the mod channel
         mod_channel = self.mod_channels[message.guild.id]
-        await mod_channel.send(f'Forwarded message:\n{message.author.name}: "{message.content}"')
+        # await mod_channel.send(f'Forwarded message:\n{message.author.name}: "{message.content}"')
 
         scores = self.eval_text(message)
         sorted_scores = {
-            k: v for k, v in sorted(scores.items(), key=lambda item: item[1])}
-        if list(reversed(sorted_scores.values()))[0] > 0.8:
-            await mod_channel.send("Message flagged by automated "
-                                   "detection: %s" % message.jump_url)
-            await mod_channel.send(self.code_format(json.dumps(scores, indent=2)))
+            k: v for k, v in sorted(scores.items(), key=lambda item: item[1], reverse=True)}
+        
+        # TODO: Severe toxicity is only for demo
+        auto_report_labels = ["SEVERE_TOXICITY", "IDENTITY_ATTACK", "THREAT"]
+        thresh = 0.8
+        for label in auto_report_labels:
+            if scores[label] > thresh:
+                Report.add_report(self, message, message.jump_url)
+                await mod_channel.send(f"Message flagged by automated detection: {message.jump_url}\
+                    ```Message: {message.content}```")
+                await mod_channel.send(self.code_format(json.dumps(sorted_scores, indent=2)))
 
     async def on_raw_message_edit(self, payload):
         message = payload.cached_message
@@ -162,11 +178,13 @@ class ModBot(discord.Client):
         Given a message, forwards the message to Perspective and returns a dictionary of scores.
         '''
         PERSPECTIVE_URL = 'https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze'
-        message.content = unidecode(message.content)
 
         url = PERSPECTIVE_URL + '?key=' + self.perspective_key
+
+        # Decode the message if it includes unicode characters
+        decoded_message = unidecode(message.content)
         data_dict = {
-            'comment': {'text': message.content},
+            'comment': {'text': decoded_message},
             'languages': ['en'],
             'requestedAttributes': {
                 'SEVERE_TOXICITY': {}, 'PROFANITY': {},
