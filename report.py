@@ -5,6 +5,15 @@ import discord
 from discord_components import DiscordComponents, ComponentsBot, Button, SelectOption, Select
 
 
+# Source: Wrapper around dict, inspired by https://docs.python.org/3/library/queue.html#queue.PriorityQueue
+from dataclasses import dataclass, field
+from typing import Any
+
+@dataclass(order=True)
+class PrioritizedItem:
+    priority: int
+    item: Any=field(compare=False)
+
 class State(Enum):
     REPORT_START = auto()
     AWAITING_MESSAGE = auto()
@@ -106,7 +115,7 @@ class Report:
                 embed=discord.Embed(
                     title="Select the category of hate speech:", 
                     color=0x109319, 
-                    description = "`race/ethinicity`, `religion`, `gender identity`, `sexual orientation` and `something else`."
+                    description = "`race/ethnicity`, `religion`, `gender identity`, `sexual orientation` and `something else`."
                     )
                 return [{"content": reply, "embed":embed}]
 
@@ -157,7 +166,11 @@ class Report:
                     )
                     # self.reported_message.author.name)) # We don't want to disclose the author
 
-                self.add_report(self.client, self.reported_message, self.reported_message_link)
+                Report.add_report(
+                    client = self.client, 
+                    reported_message = self.reported_message, 
+                    reported_message_link = self.reported_message_link
+                )
                 self.state = State.REPORT_COMPLETE
                 return [reply]
             else:
@@ -168,10 +181,11 @@ class Report:
     def report_complete(self):
         return self.state == State.REPORT_COMPLETE
 
-    def add_report(client, reported_message, reported_message_link):
+    @classmethod
+    def add_report(cls, client, reported_message, reported_message_link):
         scores = client.eval_text(reported_message)
         sorted_scores = [v for k, v in sorted(scores.items(), key=lambda item: item[1], reverse=True)]
         key = sorted_scores[0]
         value = {"Message": reported_message.content, "Message Link": reported_message_link}
-        client.pending_reports.put((-key, value))
+        client.pending_reports.put(PrioritizedItem(-key, value))
 
