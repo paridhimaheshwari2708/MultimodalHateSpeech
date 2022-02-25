@@ -121,11 +121,18 @@ class ModBot(discord.Client):
                 self.mode = None
                 self.reports.pop(author_id)
 
-        elif self.mode == Mode.REVIEW or message.content.startswith(Review.START_KEYWORD) or \
-            message.content.startswith(Review.CONTINUE_KEYWORD):
+        elif self.mode == Mode.REVIEW or message.content.startswith(Review.START_KEYWORD):
             self.mode = Mode.REVIEW
+            if author_id in self.reviews and \
+                    self.reviews[author_id].awaiting_next_action():
+                self.reviews[author_id].set_review_complete()
+                self.reviews.pop(author_id)
+                if not message.content.startswith(Review.CONTINUE_KEYWORD):
+                    self.mode = None
+                    await message.channel.send("Review stopped")
+                    return
             if author_id not in self.reviews:
-                self.reviews[author_id] = Review(self)
+                self.reviews[author_id] = Review(self, mod_channel=self.mod_channel)
 
             reviews = await self.reviews[author_id].handle_message(message)
             for r in reviews:
@@ -134,7 +141,7 @@ class ModBot(discord.Client):
                 else:
                     await message.channel.send(r)
 
-            if self.reviews[author_id].review_complete():
+            if self.reviews[author_id].is_review_complete():
                 self.mode = None
                 self.reviews.pop(author_id)
 

@@ -42,6 +42,7 @@ class Report:
         self.mod_channel = mod_channel
         self.reported_message_link = None
         self.reported_message = None
+        self.additional_info = None
 
     async def handle_message(self, message):
         '''
@@ -132,7 +133,7 @@ class Report:
                 embed = discord.Embed(
                     title="Select the category of hate speech:",
                     color=0x109319,
-                    description="`race/ethnicity`, `religion`, `gender identity`, `sexual orientation` and `something else`."
+                    description="`race`, `religion`, `gender identity`, `sexual orientation` and `something else`."
                 )
                 return [{"content": reply, "embed": embed}]
 
@@ -150,7 +151,7 @@ class Report:
                 self.state = State.SOMETHING_ELSE_CATEGORY
                 return ["Briefly describe the problem."]
 
-            elif message.content.lower() == "race/ethnicity" or \
+            elif message.content.lower() == "race" or \
                     message.content.lower() == "religion" or \
                     message.content.lower() == "gender identity" or \
                     message.content.lower() == "sexual orientation":
@@ -168,15 +169,17 @@ class Report:
 
             else:
                 return [
-                    "Unrecognised option. Please select from `race/ethnicity`, `religion`, `gender identity`, `sexual orientation` and `something else`."]
+                    "Unrecognised option. Please select from `race`, `religion`, `gender identity`, `sexual orientation` and `something else`."]
 
         if self.state == State.SOMETHING_ELSE_CATEGORY:
+            self.additional_info = message.content
             reply = "Thank you for describing the problem."
             reply += "\nPlease review documents for support and Discord's platform " \
                      "policies " \
                      "at https://support.discord.com/hc/en-us/categories" \
                      "/115000168351."
-            reply += "\nYou can further choose to : `skip`, `block` and `limit content`."
+            reply += "\nYou can further choose to : `block`, `limit content` or `skip` " \
+                     "taking any action against the user."
             self.state = State.SUBMIT_REPORT
             return [reply]
 
@@ -215,8 +218,10 @@ class Report:
             Report.add_report(
                 client=self.client,
                 reported_message=self.reported_message,
-                reported_message_link=self.reported_message_link
+                reported_message_link=self.reported_message_link,
+                additional_info=self.additional_info
             )
+            reply += "\nReport complete. Thank you!"
             self.state = State.REPORT_COMPLETE
             return [reply]
 
@@ -226,11 +231,13 @@ class Report:
         return self.state == State.REPORT_COMPLETE
 
     @classmethod
-    def add_report(cls, client, reported_message, reported_message_link):
+    def add_report(cls, client, reported_message, reported_message_link,
+                   additional_info=None):
         scores = client.eval_text(reported_message)
         sorted_scores = [v for k, v in
                          sorted(scores.items(), key=lambda item: item[1], reverse=True)]
         key = sorted_scores[0]
         value = {"Message": reported_message.content,
-                 "Message Link": reported_message_link}
+                 "Message Link": reported_message_link,
+                 "Additional Info": additional_info}
         client.pending_reports.put(PrioritizedItem(-key, value))

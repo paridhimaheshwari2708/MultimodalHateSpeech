@@ -30,13 +30,14 @@ class Review:
     HELP_KEYWORD = "help"
     CONTINUE_KEYWORD = "yes"
 
-    def __init__(self, client):
+    def __init__(self, client, mod_channel):
         self.state = State.REVIEW_START
         self.client = client
         self.message = None
         self.message_under_review = None
         self.current_report = None
         self.author_id = None
+        self.mod_channel = mod_channel
 
     async def handle_message(self, message):
         '''
@@ -90,7 +91,9 @@ class Review:
             reply += "This message was reported for violating our hate speech policies:\n"
 
             if message.content == self.current_report["Message"]:
-                reply += f"Message: {message.content}\nMessage Link: {self.current_report['Message Link']}\n"
+                reply += f"Message: {message.content}\nMessage Link: " \
+                         f"{self.current_report['Message Link']}\nAdditional Info: " \
+                         f"{self.current_report['Additional Info']}"
 
             else:
                 reply += f"OriginalMessage: {self.current_report['Message']}\n"
@@ -133,13 +136,14 @@ class Review:
                 reply = "You have marked the message as non-violating and hence, will not be removed from our platform.\
                 \nThe reporter will be notified of our decision and may have the option to re-appeal.\nReview complete. Thank You!"
                 reply = self.update_pending(reply)
-                self.state = State.REVIEW_COMPLETE
+                # self.state = State.REVIEW_COMPLETE
                 return [reply]
 
             elif message.content.lower() == "other":
-                reply = "The message will be forwarded to the appropriate team for further action.\nReview complete. Thank You!"
+                reply = "The message will be forwarded to the appropriate team for " \
+                        "further action.\nReview complete. Thank You!"
                 reply = self.update_pending(reply)
-                self.state = State.REVIEW_COMPLETE
+                # self.state = State.REVIEW_COMPLETE
                 return [reply]
 
             elif message.content.lower() == "further":
@@ -152,9 +156,9 @@ class Review:
 
         if self.state == State.ADDITIONAL_REVIEW:
             reply = "The message will be forwarded along with your feedback for " \
-                    "additional review. \nReview Complete. Thank you!"
+                    "additional review.\nReview Complete. Thank you!"
             reply = self.update_pending(reply)
-            self.state = State.REVIEW_COMPLETE
+            # self.state = State.REVIEW_COMPLETE
             return [reply]
 
         if self.state == State.CHOOSE_CATEGORY:
@@ -184,25 +188,30 @@ class Review:
 
         if self.state == State.SUBMIT_REVIEW:
             await self.message_under_review.add_reaction("🚫")
+            orig_message_author = self.message_under_review.author.name
 
             if report_counters[self.author_id] == 1:
-                reply = "The reportee has been warned and the message has been taken " \
+                reply = "%s has been warned and the message has been taken " \
                         "down." \
-                        "\nThe reportee may have the option to re-appeal."
+                        "\n%s may have the option to re-appeal." \
+                        % (orig_message_author, orig_message_author)
             elif report_counters[self.author_id] <= 5:
-                reply = "The reportee acccount has been temporarily disabled on the " \
+                reply = "%s's acccount has been temporarily disabled on the " \
                         "platform and the message has been taken down." \
-                        "\nThe reportee may have the option to re-appeal."
+                        "\n%s may have the option to re-appeal." \
+                        % (orig_message_author, orig_message_author)
             else:
-                reply = "The reportee acccount has been permanently disabled due to " \
+                reply = "%s's acccount has been permanently disabled due to " \
                         "continued violations and the message has been taken down." \
-                        "\nThe reportee may have the option to re-appeal."
+                        "\n%s may have the option to re-appeal." \
+                        % (orig_message_author, orig_message_author)
+            await self.mod_channel.send(reply)
 
             reply += "\n\nReview Complete. Thank You!"
             reply = self.update_pending(reply)
 
-            self.state = State.REVIEW_COMPLETE
-
+            # self.state = State.REVIEW_COMPLETE
+            # self.state = State.AWAIT_NEXT_ACTION
             return [reply]
 
         return []
@@ -210,11 +219,20 @@ class Review:
     def update_pending(self, reply):
         _ = self.client.pending_reports.get()
         if not self.client.pending_reports.empty():
-            reply += f"\n\nDo you wish to continue reviewing the remaning {self.client.pending_reports.qsize()} reports?" \
+            reply += f"\n\nDo you wish to continue reviewing the remaning" \
+                     f" {self.client.pending_reports.qsize()} reports?" \
                      "\nEnter `yes` to continue."
+            self.state = State.AWAIT_NEXT_ACTION
         else:
             reply += "\nNo more reports to review at this time. Bye!"
+            self.state = State.REVIEW_COMPLETE
         return reply
 
-    def review_complete(self):
+    def awaiting_next_action(self):
+        return self.state == State.AWAIT_NEXT_ACTION
+
+    def set_review_complete(self):
+        self.state = State.REVIEW_COMPLETE
+
+    def is_review_complete(self):
         return self.state == State.REVIEW_COMPLETE
