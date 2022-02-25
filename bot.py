@@ -8,6 +8,7 @@ from queue import PriorityQueue
 import discord
 import requests
 from unidecode import unidecode
+from textblob import TextBlob
 
 from report import Report
 from review import Review
@@ -187,8 +188,10 @@ class ModBot(discord.Client):
 
         # Decode the message if it includes unicode characters
         decoded_message = unidecode(message.content)
+        textBlb = TextBlob(decoded_message)
+        corrected_message = textBlb.correct()
         data_dict = {
-            'comment': {'text': decoded_message},
+            'comment': {'text': str(corrected_message)},
             'languages': ['en'],
             'requestedAttributes': {
                 'SEVERE_TOXICITY': {}, 'PROFANITY': {},
