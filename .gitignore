@@ -1,9 +1,10 @@
 *.png
+*.log
+*.json
 
-tokens.json
-discord.log
-server.log
-__pycache__
+**/__pycache__
+
+miniserve
 
 HatefulMemesDataset
-ServerRequests
+Classification/ServerRequests

@@ -1,18 +1,21 @@
 import os
 import wget
 import logging
+import pytesseract
+from PIL import Image
 from uuid import uuid4
 from datetime import datetime
 from flask import Flask, request, jsonify
+
 from inference import HatefulMemesInference
-
-DATA_DIR = "ServerRequests"
-
-app = Flask(__name__)
 model = HatefulMemesInference()
 
+DATA_DIR = 'ServerRequests'
+
+app = Flask(__name__)
+
 logger = logging.getLogger('werkzeug') # grabs underlying WSGI logger
-handler = logging.FileHandler('server.log') # creates handler for the log file
+handler = logging.FileHandler('server1.log') # creates handler for the log file
 logger.addHandler(handler) # adds handler to the werkzeug WSGI logger
 
 '''
@@ -23,10 +26,10 @@ Sample: http://turing4.stanford.edu:8080/?text=you can't be racist if there is n
 *CALLING THE SERVER PROGRAMMATICALLY FROM PYTHON*
 import requests
 
-text = "you can't be racist if there is no other race"
-image_path = "http://turing4.stanford.edu:8081/img/01247.png"
+text = 'you can't be racist if there is no other race'
+image_path = 'http://turing4.stanford.edu:8081/img/01247.png'
 
-query_to_server = f"http://turing4.stanford.edu:8080/?text={text}&image={image_path}"
+query_to_server = f'http://turing4.stanford.edu:8080/?text={text}&image={image_path}'
 output = requests.get(query_to_server).json()
 print(output)
 '''
@@ -36,17 +39,19 @@ def infer():
     text = request.args.get('text')
     image_url = request.args.get('image')
     event_id = datetime.now().strftime('%Y-%m-%d-%H-%M-%S-') + str(uuid4())
-    image_path = os.path.join(DATA_DIR, f"{event_id}.png")
+    image_path = os.path.join(DATA_DIR, f'{event_id}.png')
     wget.download(image_url, image_path)
+    if text is None:
+        text = pytesseract.image_to_string(Image.open(image_path))
     prob = model.infer(image_path, text)
     # Logging
-    logger.info("-"*100)
-    logger.info(f"Text: {text}")
-    logger.info(f"Image URL: {image_url}")
-    logger.info(f"Image Path: {image_path}")
-    logger.info(f"Probability of Hateful: {prob:.2f}")
-    logger.info("-"*100)
-    return jsonify({"Hateful": prob})
+    logger.info('-'*100)
+    logger.info(f'Text: {text}')
+    logger.info(f'Image URL: {image_url}')
+    logger.info(f'Image Path: {image_path}')
+    logger.info(f'Probability of Hateful: {prob:.3f}')
+    logger.info('-'*100)
+    return jsonify({'Hateful': prob})
 
 if __name__ == '__main__':
     # run() method of Flask class runs the application on the local development server.
