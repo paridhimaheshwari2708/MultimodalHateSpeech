@@ -1,18 +1,17 @@
 import re
-from enum import Enum, auto
-
-import discord
-from discord_components import DiscordComponents, ComponentsBot, Button, SelectOption, Select
-
-
 # Source: Wrapper around dict, inspired by https://docs.python.org/3/library/queue.html#queue.PriorityQueue
 from dataclasses import dataclass, field
+from enum import Enum, auto
 from typing import Any
+
+import discord
+
 
 @dataclass(order=True)
 class PrioritizedItem:
     priority: int
-    item: Any=field(compare=False)
+    item: Any = field(compare=False)
+
 
 class State(Enum):
     REPORT_START = auto()
@@ -26,7 +25,11 @@ class State(Enum):
     SUBMIT_REPORT = auto()
     REPORT_COMPLETE = auto()
 
-expansions = {"spam": "spam", "hate": "hate speech", "harmful": "violence/harmful behavior", "misinfo": "misinformation"}
+
+expansions = {"spam": "spam", "hate": "hate speech",
+              "harmful": "violence/harmful behavior", "misinfo": "misinformation"}
+
+
 class Report:
     START_KEYWORD = "report"
     CANCEL_KEYWORD = "cancel"
@@ -63,7 +66,8 @@ class Report:
             # Parse out the three ID strings from the message link
             m = re.search('/(\d+)/(\d+)/(\d+)', message.content)
             if not m:
-                return ["I'm sorry, I couldn't read that link. Please try again or say `cancel` to cancel."]
+                return [
+                    "I'm sorry, I couldn't read that link. Please try again or say `cancel` to cancel."]
             guild = self.client.get_guild(int(m.group(1)))
             if not guild:
                 return [
@@ -85,46 +89,60 @@ class Report:
             reply = "I found this message:" + "```" + message.author.name + ": " + message.content + "```"
             # reply += "Please tell us what is wrong with this message."
 
-            embed=discord.Embed(title="Please tell us what is wrong with this message:", color=0x109319)
-            embed.add_field(name="spam", value="The message is unwanted and/or repeated.", inline=False) 
-            embed.add_field(name="hate", value="The message constitutes hate speech targeting a person or group.", inline=False)
-            embed.add_field(name="harmful", value="The message incites violence and/or promotes harmful behavior.", inline=False)
-            embed.add_field(name="misinfo", value="The message aims at spreading/promoting incorrect information.", inline=False)
-            embed.add_field(name="other", value="None of the above. I wish to describe the issue myself.", inline=False)
+            embed = discord.Embed(title="Please tell us what is wrong with this message:",
+                                  color=0x109319)
+            embed.add_field(name="spam", value="The message is unwanted and/or repeated.",
+                            inline=False)
+            embed.add_field(name="hate",
+                            value="The message constitutes hate speech targeting a person or group.",
+                            inline=False)
+            embed.add_field(name="harmful",
+                            value="The message incites violence and/or promotes harmful behavior.",
+                            inline=False)
+            embed.add_field(name="misinfo",
+                            value="The message aims at spreading/promoting incorrect information.",
+                            inline=False)
+            embed.add_field(name="other",
+                            value="None of the above. I wish to describe the issue myself.",
+                            inline=False)
 
             self.state = State.CHOOSE_TYPE
             # return [reply]
-            return [{"content": reply, "embed":embed}]
+            return [{"content": reply, "embed": embed}]
 
         if self.state == State.CHOOSE_TYPE:
-
             if message.content.lower() == "spam" \
-                or message.content.lower() == "harmful" \
-                or message.content.lower() == "misinfo":
+                    or message.content.lower() == "harmful" \
+                    or message.content.lower() == "misinfo":
 
                 self.state = State.SUBMIT_REPORT
-                reply = "You have reported this message for " + expansions[message.content.lower()] + "."
-                reply += "\nPlease review these documents for support and you may also review our platform policies."
-                reply += "\nYou can further choose to : `receive notifications`, `block` and `limit content`."
+                reply = "You have reported this message for " + expansions[
+                    message.content.lower()] + "."
+                reply += "\nPlease review documents for support and Discord's platform " \
+                         "policies " \
+                         "at https://support.discord.com/hc/en-us/categories" \
+                         "/115000168351."
+                reply += "\nYou can further choose to : `skip`, `block` and `limit content`."
                 return [reply]
 
             elif message.content.lower() == "hate":
                 self.state = State.CHOOSE_CATEGORY
                 reply = ""
                 # TODO: Should this be an embed or as a description?
-                embed=discord.Embed(
-                    title="Select the category of hate speech:", 
-                    color=0x109319, 
-                    description = "`race/ethnicity`, `religion`, `gender identity`, `sexual orientation` and `something else`."
-                    )
-                return [{"content": reply, "embed":embed}]
+                embed = discord.Embed(
+                    title="Select the category of hate speech:",
+                    color=0x109319,
+                    description="`race/ethnicity`, `religion`, `gender identity`, `sexual orientation` and `something else`."
+                )
+                return [{"content": reply, "embed": embed}]
 
             elif message.content.lower() == "other":
                 self.state = State.SOMETHING_ELSE_CATEGORY
                 return ["Briefly describe the problem."]
 
             else:
-                return ["Unrecognised option. Please select from `spam`, `hate`, `harmful`, `misinfo`, or `other`."]
+                return [
+                    "Unrecognised option. Please select from `spam`, `hate`, `harmful`, `misinfo`, or `other`."]
 
         if self.state == State.CHOOSE_CATEGORY:
 
@@ -132,49 +150,75 @@ class Report:
                 self.state = State.SOMETHING_ELSE_CATEGORY
                 return ["Briefly describe the problem."]
 
-            elif message.content.lower() == "race/ethinicity" or \
+            elif message.content.lower() == "race/ethnicity" or \
                     message.content.lower() == "religion" or \
                     message.content.lower() == "gender identity" or \
                     message.content.lower() == "sexual orientation":
 
                 self.state = State.SUBMIT_REPORT
-                reply = "You have reported this message for violating our hate speech policy for " + message.content +"."
+                reply = "You have reported this message for violating our hate speech policy for " + message.content + "."
 
-                #TODO: Add documents here.
-                reply += "\nPlease review these documents for support and you may also review our platform policies."
-                reply += "\nChoose action: `receive notifications`, `block` and `limit content`."
+                # TODO: Add documents here.
+                reply += "\nPlease review documents for support and Discord's platform " \
+                         "policies " \
+                         "at https://support.discord.com/hc/en-us/categories" \
+                         "/115000168351."
+                reply += "\nYou can further choose to : `skip`, `block` and `limit content`."
                 return [reply]
 
             else:
-                return ["Unrecognised option. Please select from `race/ethinicity`, `religion`, `gender identity`, `sexual orientation` and `something else`."]
+                return [
+                    "Unrecognised option. Please select from `race/ethnicity`, `religion`, `gender identity`, `sexual orientation` and `something else`."]
 
         if self.state == State.SOMETHING_ELSE_CATEGORY:
             reply = "Thank you for describing the problem."
-            reply += "\nPlease review these documents for support on hate speech and our platform policies."
-            reply += "\nChoose action: `receive notifications`, `block` and `limit content`."
+            reply += "\nPlease review documents for support and Discord's platform " \
+                     "policies " \
+                     "at https://support.discord.com/hc/en-us/categories" \
+                     "/115000168351."
+            reply += "\nYou can further choose to : `skip`, `block` and `limit content`."
             self.state = State.SUBMIT_REPORT
             return [reply]
 
         if self.state == State.SUBMIT_REPORT:
-            if message.content.lower() in ["receive notifications", "block", "limit content"]:
-                #TODO: Differential replies based on action and allowing multiple actions.
-                reply = "Thank you for reporting. Our team will review the message and take action, including disabling the account of the user if necessary."
-                mod_channel = self.mod_channel
-                await mod_channel.send(
-                    f"Report submitted for: {self.reported_message_link}\
-                    ```Message: {self.reported_message.content}```"
-                    )
-                    # self.reported_message.author.name)) # We don't want to disclose the author
-
-                Report.add_report(
-                    client = self.client, 
-                    reported_message = self.reported_message, 
-                    reported_message_link = self.reported_message_link
-                )
-                self.state = State.REPORT_COMPLETE
-                return [reply]
+            reply = ""
+            mod_channel_msg = "Report submitted for: %s\n```Message: %s```\n" \
+                              % (self.reported_message_link,
+                                 self.reported_message.content)
+            if message.content.lower() == "skip":
+                mod_channel_msg += "%s has chosen not to take any direct action " \
+                                   "against %s" \
+                                   % (message.author.name,
+                                      self.reported_message.author.name)
+                reply += "You have chosen not to taken any direct action against %s." \
+                         % self.reported_message.author.name
+                await self.reported_message.add_reaction("⏭")
+            elif message.content.lower() == "block":
+                mod_channel_msg += "%s has chosen to block %s" \
+                                   % (message.author.name,
+                                      self.reported_message.author.name)
+                reply += "You have chosen to block %s." \
+                         % self.reported_message.author.name
+                await self.reported_message.add_reaction("⛔")
+            elif message.content.lower() == "limit content":
+                mod_channel_msg += "%s has chosen to block %s" \
+                                   % (message.author.name,
+                                      self.reported_message.author.name)
+                reply += "You have chosen to limit content from %s." \
+                         % self.reported_message.author.name
+                await self.reported_message.add_reaction("⚠")
             else:
-                return ["Unrecognised option. Please select from `receive notifications`, `block` and `limit content`"]
+                return ["Unrecognised option. Please select from `skip`, `block` and "
+                        "`limit content`"]
+            await self.mod_channel.send(mod_channel_msg)
+
+            Report.add_report(
+                client=self.client,
+                reported_message=self.reported_message,
+                reported_message_link=self.reported_message_link
+            )
+            self.state = State.REPORT_COMPLETE
+            return [reply]
 
         return []
 
@@ -184,8 +228,9 @@ class Report:
     @classmethod
     def add_report(cls, client, reported_message, reported_message_link):
         scores = client.eval_text(reported_message)
-        sorted_scores = [v for k, v in sorted(scores.items(), key=lambda item: item[1], reverse=True)]
+        sorted_scores = [v for k, v in
+                         sorted(scores.items(), key=lambda item: item[1], reverse=True)]
         key = sorted_scores[0]
-        value = {"Message": reported_message.content, "Message Link": reported_message_link}
+        value = {"Message": reported_message.content,
+                 "Message Link": reported_message_link}
         client.pending_reports.put(PrioritizedItem(-key, value))
-

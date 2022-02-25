@@ -165,11 +165,8 @@ class ModBot(discord.Client):
                 await mod_channel.send(self.code_format(json.dumps(sorted_scores, indent=2)))
 
     async def on_raw_message_edit(self, payload):
-        message = payload.cached_message
-
-        if not message:
-            channel = self.get_channel(payload.channel_id)
-            message = await channel.fetch_message(payload.message_id)
+        channel = self.get_channel(payload.channel_id)
+        message = await channel.fetch_message(payload.message_id)
 
         await self.handle_channel_message(message)
 

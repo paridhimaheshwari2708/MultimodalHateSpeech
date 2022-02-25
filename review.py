@@ -1,9 +1,7 @@
-from collections import defaultdict
-from email.policy import default
-from inspect import CO_ASYNC_GENERATOR
 import re
-from enum import Enum, auto
 from collections import defaultdict
+from enum import Enum, auto
+
 import discord
 
 
@@ -18,10 +16,13 @@ class State(Enum):
     SOMETHING_ELSE_CATEGORY = auto()
     CHOOSE_ACTIONS = auto()
     SUBMIT_REVIEW = auto()
+    AWAIT_NEXT_ACTION = auto()
     REVIEW_COMPLETE = auto()
     # CONTINUE_REVIEW = auto()
 
+
 report_counters = defaultdict(int)
+
 
 class Review:
     START_KEYWORD = "review"
@@ -48,11 +49,11 @@ class Review:
             return ["Review cancelled."]
 
         if self.state == State.REVIEW_START:
-        
+
             if self.client.pending_reports.empty():
                 return ["No reports to review at this time. Bye!"]
 
-            self.current_report = self.client.pending_reports.queue[0][-1]
+            self.current_report = self.client.pending_reports.queue[0].item
             message = self.current_report["Message Link"]
             self.state = State.AWAITING_MESSAGE
 
@@ -87,26 +88,32 @@ class Review:
             reply += "Say `help` at any time for more information.\n"
             reply += f"Found {self.client.pending_reports.qsize()} pending reports.\n\n"
             reply += "This message was reported for violating our hate speech policies:\n"
-            
+
             if message.content == self.current_report["Message"]:
                 reply += f"Message: {message.content}\nMessage Link: {self.current_report['Message Link']}\n"
-            
+
             else:
                 reply += f"OriginalMessage: {self.current_report['Message']}\n"
-                reply +=  f"Current Message: {message.content}\n"
+                reply += f"Current Message: {message.content}\n"
                 reply += f"Message Link:{self.current_report['Message Link']}\n"
 
             self.author_id = message.author.id
 
-            embed=discord.Embed(title="Please tell us what is wrong with this message:", color=0x109319)
-            embed.add_field(name="hate", value="The message violates our platform's hate speech policies.", inline=False)
+            embed = discord.Embed(title="Please tell us what is wrong with this message:",
+                                  color=0x109319)
+            embed.add_field(name="hate",
+                            value="The message violates our platform's hate speech policies.",
+                            inline=False)
             embed.add_field(name="other", value="The message does not constitute hate speech but violates \
                         our platform's policies for some other abuse type.", inline=False)
-            embed.add_field(name="none", value="The message is non-violating.", inline=False)
-            embed.add_field(name="further", value="You wish to request additional review for this message.", inline=False)
+            embed.add_field(name="none", value="The message is non-violating.",
+                            inline=False)
+            embed.add_field(name="further",
+                            value="You wish to request additional review for this message.",
+                            inline=False)
 
             self.state = State.CHOOSE_TYPE
-            return [{"content": reply, "embed":embed}]
+            return [{"content": reply, "embed": embed}]
 
         if self.state == State.CHOOSE_TYPE:
             if message.content.lower() == "hate":
@@ -115,23 +122,23 @@ class Review:
                 self.state = State.CHOOSE_CATEGORY
                 reply = ""
                 # TODO: Should this be an embed or as a description?
-                embed=discord.Embed(
-                    title="Select the category of hate speech:", 
-                    color=0x109319, 
-                    description = "`race/ethinicity`, `religion`, `gender identity`, `sexual orientation` and `something else`."
-                    )
-                return [{"content": reply, "embed":embed}]
+                embed = discord.Embed(
+                    title="Select the category of hate speech:",
+                    color=0x109319,
+                    description="`race/ethinicity`, `religion`, `gender identity`, `sexual orientation` and `something else`."
+                )
+                return [{"content": reply, "embed": embed}]
 
             elif message.content.lower() == "none":
                 reply = "You have marked the message as non-violating and hence, will not be removed from our platform.\
                 \nThe reporter will be notified of our decision and may have the option to re-appeal.\nReview complete. Thank You!"
-                reply = self.updatePending(reply)
+                reply = self.update_pending(reply)
                 self.state = State.REVIEW_COMPLETE
                 return [reply]
 
             elif message.content.lower() == "other":
                 reply = "The message will be forwarded to the appropriate team for further action.\nReview complete. Thank You!"
-                reply = self.updatePending(reply)
+                reply = self.update_pending(reply)
                 self.state = State.REVIEW_COMPLETE
                 return [reply]
 
@@ -140,12 +147,13 @@ class Review:
                 return ["Briefly describe your reason for seeking additional review."]
             else:
                 return [
-                    "Unrecognised option. Please select from `hate`, `other`, `none` or `further`."]
+                    "Unrecognised option. Please select from `hate`, `other`, "
+                    "`none` or `further`."]
 
         if self.state == State.ADDITIONAL_REVIEW:
             reply = "The message will be forwarded along with your feedback for " \
                     "additional review. \nReview Complete. Thank you!"
-            reply = self.updatePending(reply)
+            reply = self.update_pending(reply)
             self.state = State.REVIEW_COMPLETE
             return [reply]
 
@@ -176,34 +184,37 @@ class Review:
 
         if self.state == State.SUBMIT_REVIEW:
             await self.message_under_review.add_reaction("🚫")
-            
+
             if report_counters[self.author_id] == 1:
-                reply = "The reportee has been warned and the message has been taken down." \
-                        "\n The reportee may have the option to re-appeal."
+                reply = "The reportee has been warned and the message has been taken " \
+                        "down." \
+                        "\nThe reportee may have the option to re-appeal."
             elif report_counters[self.author_id] <= 5:
-                reply = "The reportee  acccount has been temporarily disabled on the platform and the message has been taken down."\
-                    "\nThe reportee may have the option to re-appeal."
+                reply = "The reportee acccount has been temporarily disabled on the " \
+                        "platform and the message has been taken down." \
+                        "\nThe reportee may have the option to re-appeal."
             else:
-                reply = "The reportee  acccount has been permanently disabled due to continued violations and the message has been taken down."\
-                    "\nThe reportee may have the option to re-appeal."
+                reply = "The reportee acccount has been permanently disabled due to " \
+                        "continued violations and the message has been taken down." \
+                        "\nThe reportee may have the option to re-appeal."
 
             reply += "\n\nReview Complete. Thank You!"
-            reply = self.updatePending(reply)
+            reply = self.update_pending(reply)
 
             self.state = State.REVIEW_COMPLETE
-        
+
             return [reply]
 
         return []
-    def updatePending(self, reply):
+
+    def update_pending(self, reply):
         _ = self.client.pending_reports.get()
         if not self.client.pending_reports.empty():
             reply += f"\n\nDo you wish to continue reviewing the remaning {self.client.pending_reports.qsize()} reports?" \
-                "\nEnter `yes` to continue."
+                     "\nEnter `yes` to continue."
         else:
-            reply += "No more reports to review at this time. Bye!"
+            reply += "\nNo more reports to review at this time. Bye!"
         return reply
-
 
     def review_complete(self):
         return self.state == State.REVIEW_COMPLETE
