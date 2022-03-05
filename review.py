@@ -56,8 +56,9 @@ class Review:
             if self.client.pending_reports.empty():
                 return ["No reports to review at this time. Bye!"]
 
-            self.current_report = self.client.pending_reports.queue[0].item
-            message = self.current_report["Message Link"]
+            message = self.client.pending_reports.queue[0].item
+            self.current_report = self.client.message_report_map[message]
+            # message = self.current_report["Message Link"]
             self.state = State.AWAITING_MESSAGE
 
         if self.state == State.AWAITING_MESSAGE:
@@ -90,12 +91,12 @@ class Review:
             reply = "Thank you for starting the reviewing process. "
             reply += "Say `help` at any time for more information.\n"
             reply += f"Found {self.client.pending_reports.qsize()} pending reports.\n\n"
-            reply += "This message was reported for violating our hate speech policies:\n"
+            reply += f"This message was reported for violating our hate speech policies {self.current_report['nreports']} time(s):\n"
 
             if message.content == self.current_report["Message"]:
-                reply += f"Message: {message.content}\nMessage Link: " \
-                         f"{self.current_report['Message Link']}\nAdditional Info: " \
-                         f"{self.current_report['Additional Info']}"
+                reply += f"`Message`: {message.content}\n`Message Link`: " \
+                         f"{self.current_report['Message Link']}\n`Additional Info`:\n" \
+                         f"\t{self.current_report['Additional Info']}"
 
             else:
                 reply += f"OriginalMessage: {self.current_report['Message']}\n"
@@ -189,14 +190,6 @@ class Review:
                     "`religion`, `gender identity`, `sexual orientation` and "
                     "`something else`."]
 
-        # if self.state == State.SOMETHING_ELSE_CATEGORY:
-        #     reply = "Thank you for describing the problem." \
-        #             "\nEnter `delete` in order to delete the original message " \
-        #             "immediately and `continue` to let the platform take the " \
-        #             "necessary action."
-        #     self.state = State.SUBMIT_REVIEW
-        #     return [reply]
-
         if self.state == State.SUBMIT_REVIEW:
             await self.message_under_review.add_reaction("🚫")
             orig_message_author = self.message_under_review.author.name
@@ -228,7 +221,10 @@ class Review:
         return []
 
     def update_pending(self, reply):
-        _ = self.client.pending_reports.get()
+        # Remove this message from the queue and the message-report map
+        curr_message_link = self.client.pending_reports.get()
+        self.client.message_report_map.pop(curr_message_link.item)
+
         if not self.client.pending_reports.empty():
             reply += f"\n\nDo you wish to continue reviewing the remaning" \
                      f" {self.client.pending_reports.qsize()} reports?" \

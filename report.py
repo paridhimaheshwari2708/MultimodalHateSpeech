@@ -243,11 +243,25 @@ class Report:
     @classmethod
     def add_report(cls, client, reported_message, reported_message_link,
                    additional_info=None):
-        scores = client.eval_text(reported_message)
-        sorted_scores = [v for k, v in
-                         sorted(scores.items(), key=lambda item: item[1], reverse=True)]
-        key = sorted_scores[0]
-        value = {"Message": reported_message.content,
-                 "Message Link": reported_message_link,
-                 "Additional Info": additional_info}
-        client.pending_reports.put(PrioritizedItem(-key, value))
+        
+        if reported_message_link in client.message_report_map:
+            client.message_report_map[reported_message_link]["nreports"] += 1
+            if additional_info:
+                if client.message_report_map[reported_message_link]["Additional Info"]:
+                    client.message_report_map[reported_message_link]["Additional Info"] += "\n\t" + additional_info
+                else:
+                    client.message_report_map[reported_message_link]["Additional Info"] = additional_info
+
+        else:    
+            scores = client.eval_text(reported_message)
+            sorted_scores = [v for k, v in
+                            sorted(scores.items(), key=lambda item: item[1], reverse=True)]
+            key = sorted_scores[0]
+
+            value = {"Message": reported_message.content,
+                    "Message Link": reported_message_link,
+                    "Additional Info": additional_info,
+                    "nreports": 1}
+            client.message_report_map[reported_message_link] = value
+            
+            client.pending_reports.put(PrioritizedItem(-key, reported_message_link))

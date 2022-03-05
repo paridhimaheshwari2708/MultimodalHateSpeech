@@ -50,6 +50,7 @@ class ModBot(discord.Client):
         self.perspective_key = key
         self.mode = None
         self.pending_reports = PriorityQueue()
+        self.message_report_map = {} # Map message link to the reports
 
     async def on_ready(self):
         print(f'{self.user.name} has connected to Discord! It is these guilds:')
