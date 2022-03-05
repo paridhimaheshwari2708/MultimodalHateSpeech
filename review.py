@@ -142,8 +142,10 @@ class Review:
                 return [{"content": reply, "embed": embed}]
 
             elif message.content.lower() == "none":
-                reply = "You have marked the message as non-violating and hence, will not be removed from our platform.\
-                \nThe reporter will be notified of our decision and may have the option to re-appeal.\nReview complete. Thank You!"
+                reply = "You have marked the message as non-violating and hence, " \
+                        "will not be removed from our platform. The reporter will be " \
+                        "notified of our decision.\nReview complete. " \
+                        "Thank You!"
                 reply = self.update_pending(reply)
                 # self.state = State.REVIEW_COMPLETE
                 return [reply]
@@ -198,13 +200,10 @@ class Review:
                 reply = "Thank you for reviewing. %s has been warned and the message " \
                         "%s has been taken " \
                         "down." \
-                        "\n%s may have the option to re-appeal." \
-                        % (orig_message_author, self.current_report['Message Link'],
-                           orig_message_author)
+                        % (orig_message_author, self.current_report['Message Link'])
                 reply_to_author = "Violating message: %s\nYou are being warned for " \
                                   "violating the platform " \
-                                  "policies and your message has been taken down. You " \
-                                  "have the option to re-appeal."\
+                                  "policies and your message has been taken down."\
                                   % self.current_report['Message Link']
                 reply_to_reporter = "We reviewed your report for the message %s and " \
                                     "found it violating our platform policies. The " \
@@ -215,15 +214,12 @@ class Review:
             elif report_counters[self.author_id] <= 5:
                 reply = "Thank you for reviewing. %s's acccount has been temporarily " \
                         "disabled on the " \
-                        "platform and the message %s has been taken down." \
-                        "\n%s may have the option to re-appeal." \
-                        % (orig_message_author, self.current_report['Message Link'],
-                           orig_message_author)
+                        "platform and the message %s has been taken down."\
+                        % (orig_message_author, self.current_report['Message Link'])
                 reply_to_author = "Violating message: %s\nYour account has been " \
                                   "temporarily disabled for " \
                                   "violating the platform " \
-                                  "policies and your message has been taken down. You " \
-                                  "have the option to re-appeal." \
+                                  "policies and your message has been taken down." \
                                   % self.current_report['Message Link']
                 reply_to_reporter = "We reviewed your report for the message %s and " \
                                     "found it violating our platform policies. The " \
@@ -235,14 +231,11 @@ class Review:
                 reply = "Thank you for reviewing. %s's acccount has been permanently " \
                         "disabled due to " \
                         "continued violations and the message %s has been taken down." \
-                        "\n%s may have the option to re-appeal." \
-                        % (orig_message_author, self.current_report['Message Link'],
-                           orig_message_author)
+                        % (orig_message_author, self.current_report['Message Link'])
                 reply_to_author = "Violating message: %s\nYour account has been " \
                                   "permanently disabled for " \
                                   "repeated violations of the platform " \
-                                  "policies and your message has been taken down. You " \
-                                  "have the option to re-appeal." \
+                                  "policies and your message has been taken down." \
                                   % self.current_report['Message Link']
                 reply_to_reporter = "We reviewed your report for the message %s and " \
                                     "found it violating our platform policies. The " \
@@ -259,8 +252,6 @@ class Review:
             reply += "\n\nReview Complete."
             reply = self.update_pending(reply)
 
-            # self.state = State.REVIEW_COMPLETE
-            # self.state = State.AWAIT_NEXT_ACTION
             return [reply]
 
         return []
