@@ -132,7 +132,7 @@ class Review:
                 reply = ""
                 # TODO: Should this be an embed or as a description?
                 embed = discord.Embed(
-                    title="Select the category of hate speech:",
+                    title="What category of harmful speech does the message fall under?",
                     color=0x109319,
                     description="`(1) race`, `(2) religion`, `(3) gender identity`, `(4) sexual orientation` and `something else`."
                 )
