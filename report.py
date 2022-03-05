@@ -29,6 +29,8 @@ class State(Enum):
 expansions = {"spam": "spam", "hate": "hate speech",
               "harmful": "violence/harmful behavior", "misinfo": "misinformation"}
 
+abuse_cat = {"1": "spam", "2": "hate", "3": "harmful", "4": "misinfo", "5": "other"}
+hate_cat = {"1": "race", "2": "religion", "3": "gender identity", "4": "sexual orientation", "5": "something else"}
 
 class Report:
     START_KEYWORD = "report"
@@ -92,33 +94,36 @@ class Report:
 
             embed = discord.Embed(title="Please tell us what is wrong with this message:",
                                   color=0x109319)
-            embed.add_field(name="spam", value="The message is unwanted and/or repeated.",
+            embed.add_field(name="(1) spam", value="The message is unwanted and/or repeated.",
                             inline=False)
-            embed.add_field(name="hate",
+            embed.add_field(name="(2) hate",
                             value="The message constitutes hate speech targeting a person or group.",
                             inline=False)
-            embed.add_field(name="harmful",
+            embed.add_field(name="(3) harmful",
                             value="The message incites violence and/or promotes harmful behavior.",
                             inline=False)
-            embed.add_field(name="misinfo",
+            embed.add_field(name="(4) misinfo",
                             value="The message aims at spreading/promoting incorrect information.",
                             inline=False)
-            embed.add_field(name="other",
+            embed.add_field(name="(5) other",
                             value="None of the above. I wish to describe the issue myself.",
                             inline=False)
+            
+            embed.set_footer(text="Example: To report the message for hate speech, type `hate` or `2`.")
 
             self.state = State.CHOOSE_TYPE
             # return [reply]
             return [{"content": reply, "embed": embed}]
 
         if self.state == State.CHOOSE_TYPE:
-            if message.content.lower() == "spam" \
-                    or message.content.lower() == "harmful" \
-                    or message.content.lower() == "misinfo":
-
+            if message.content.isdigit():
+                    message.content = abuse_cat[message.content]
+            if message.content.lower() in ["spam", "harmful", "misinfo"]: 
+            # or abuse_cat[message.content] in ["spam", "harmful", "misinfo"]:
+                
                 self.state = State.SUBMIT_REPORT
-                reply = "You have reported this message for " + expansions[
-                    message.content.lower()] + "."
+                reply = "You have reported this message for " + (expansions[
+                    message.content.lower()]) + "."
                 reply += "\nPlease review documents for support and Discord's platform " \
                          "policies " \
                          "at https://support.discord.com/hc/en-us/categories" \
@@ -133,8 +138,9 @@ class Report:
                 embed = discord.Embed(
                     title="Select the category of hate speech:",
                     color=0x109319,
-                    description="`race`, `religion`, `gender identity`, `sexual orientation` and `something else`."
+                    description="`(1) race`, `(2) religion`, `(3) gender identity`, `(4) sexual orientation` and `(5) something else`."
                 )
+                embed.set_footer(text="Example: To select race, type `race` or `1`.")
                 return [{"content": reply, "embed": embed}]
 
             elif message.content.lower() == "other":
@@ -146,6 +152,9 @@ class Report:
                     "Unrecognised option. Please select from `spam`, `hate`, `harmful`, `misinfo`, or `other`."]
 
         if self.state == State.CHOOSE_CATEGORY:
+
+            if message.content.isdigit():
+                message.content = hate_cat[message.content]
 
             if message.content.lower() == "something else":
                 self.state = State.SOMETHING_ELSE_CATEGORY
@@ -164,7 +173,8 @@ class Report:
                          "policies " \
                          "at https://support.discord.com/hc/en-us/categories" \
                          "/115000168351."
-                reply += "\nYou can further choose to : `skip`, `block` and `limit content`."
+                reply += "\nYou can further choose to : `block`, `limit content` or `skip` " \
+                     "taking any action against the user."
                 return [reply]
 
             else:

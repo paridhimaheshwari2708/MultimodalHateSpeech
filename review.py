@@ -23,6 +23,8 @@ class State(Enum):
 
 report_counters = defaultdict(int)
 
+abuse_cat = {"1": "hate", "2": "other", "3": "none", "4": "further"}
+hate_cat = {"1": "race", "2": "religion", "3": "gender identity", "4": "sexual orientation", "5": "something else"}
 
 class Review:
     START_KEYWORD = "review"
@@ -104,21 +106,25 @@ class Review:
 
             embed = discord.Embed(title="Please tell us what is wrong with this message:",
                                   color=0x109319)
-            embed.add_field(name="hate",
+            embed.add_field(name="(1) hate",
                             value="The message violates our platform's hate speech policies.",
                             inline=False)
-            embed.add_field(name="other", value="The message does not constitute hate speech but violates \
+            embed.add_field(name="(2) other", value="The message does not constitute hate speech but violates \
                         our platform's policies for some other abuse type.", inline=False)
-            embed.add_field(name="none", value="The message is non-violating.",
+            embed.add_field(name="(3) none", value="The message is non-violating.",
                             inline=False)
-            embed.add_field(name="further",
+            embed.add_field(name="(4) further",
                             value="You wish to request additional review for this message.",
                             inline=False)
+            embed.set_footer(text="Example: To report the message for hate speech, type `hate` or `1`.")
 
             self.state = State.CHOOSE_TYPE
             return [{"content": reply, "embed": embed}]
 
         if self.state == State.CHOOSE_TYPE:
+            if message.content.isdigit():
+                message.content = abuse_cat[message.content]
+
             if message.content.lower() == "hate":
                 report_counters[self.author_id] += 1
 
@@ -128,8 +134,10 @@ class Review:
                 embed = discord.Embed(
                     title="Select the category of hate speech:",
                     color=0x109319,
-                    description="`race/ethinicity`, `religion`, `gender identity`, `sexual orientation` and `something else`."
+                    description="`(1) race`, `(2) religion`, `(3) gender identity`, `(4) sexual orientation` and `something else`."
                 )
+                
+                embed.set_footer(text="Example: To select race, type `race` or `1`.")
                 return [{"content": reply, "embed": embed}]
 
             elif message.content.lower() == "none":
@@ -162,11 +170,14 @@ class Review:
             return [reply]
 
         if self.state == State.CHOOSE_CATEGORY:
+            if message.content.isdigit():
+                message.content = hate_cat[message.content]
+
             if message.content.lower() == "something else":
                 self.state = State.SUBMIT_REVIEW
                 return ["Briefly describe the problem."]
 
-            elif message.content.lower() == "race/ethinicity" or \
+            elif message.content.lower() == "race" or \
                     message.content.lower() == "religion" or \
                     message.content.lower() == "gender identity" or \
                     message.content.lower() == "sexual orientation":
@@ -174,7 +185,7 @@ class Review:
 
             else:
                 return [
-                    "Unrecognised option. Please select from `race/ethinicity`, "
+                    "Unrecognised option. Please select from `race`, "
                     "`religion`, `gender identity`, `sexual orientation` and "
                     "`something else`."]
 
