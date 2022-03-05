@@ -30,7 +30,9 @@ expansions = {"spam": "spam", "hate": "hate speech",
               "harmful": "violence/harmful behavior", "misinfo": "misinformation"}
 
 abuse_cat = {"1": "spam", "2": "hate", "3": "harmful", "4": "misinfo", "5": "other"}
-hate_cat = {"1": "race", "2": "religion", "3": "gender identity", "4": "sexual orientation", "5": "something else"}
+hate_cat = {"1": "race", "2": "religion", "3": "gender identity",
+            "4": "sexual orientation", "5": "something else"}
+
 
 class Report:
     START_KEYWORD = "report"
@@ -53,6 +55,7 @@ class Report:
         get you started and give you a model for working with Discord. 
         '''
 
+        self.message = message
         if message.content.lower() == self.CANCEL_KEYWORD:
             self.state = State.REPORT_COMPLETE
             return ["Report cancelled."]
@@ -81,8 +84,8 @@ class Report:
                     "It seems this channel was deleted or never existed. Please try again or say `cancel` to cancel."]
             try:
                 self.reported_message_link = message.content
-                message = await channel.fetch_message(int(m.group(3)))
-                self.reported_message = message
+                reported_message = await channel.fetch_message(int(m.group(3)))
+                self.reported_message = reported_message
             except discord.errors.NotFound:
                 return [
                     "It seems this message was deleted or never existed. Please try again or say `cancel` to cancel."]
@@ -94,7 +97,8 @@ class Report:
 
             embed = discord.Embed(title="Please tell us what is wrong with this message:",
                                   color=0x109319)
-            embed.add_field(name="(1) spam", value="The message is unwanted and/or repeated.",
+            embed.add_field(name="(1) spam",
+                            value="The message is unwanted and/or repeated.",
                             inline=False)
             embed.add_field(name="(2) hate",
                             value="The message constitutes hate speech targeting a person or group.",
@@ -108,8 +112,9 @@ class Report:
             embed.add_field(name="(5) other",
                             value="None of the above. I wish to describe the issue myself.",
                             inline=False)
-            
-            embed.set_footer(text="Example: To report the message for hate speech, type `hate` or `2`.")
+
+            embed.set_footer(
+                text="Example: To report the message for hate speech, type `hate` or `2`.")
 
             self.state = State.CHOOSE_TYPE
             # return [reply]
@@ -117,10 +122,10 @@ class Report:
 
         if self.state == State.CHOOSE_TYPE:
             if message.content.isdigit():
-                    message.content = abuse_cat[message.content]
-            if message.content.lower() in ["spam", "harmful", "misinfo"]: 
-            # or abuse_cat[message.content] in ["spam", "harmful", "misinfo"]:
-                
+                message.content = abuse_cat[message.content]
+            if message.content.lower() in ["spam", "harmful", "misinfo"]:
+                # or abuse_cat[message.content] in ["spam", "harmful", "misinfo"]:
+
                 self.state = State.SUBMIT_REPORT
                 reply = "You have reported this message for " + (expansions[
                     message.content.lower()]) + "."
@@ -174,7 +179,7 @@ class Report:
                          "at https://support.discord.com/hc/en-us/categories" \
                          "/115000168351."
                 reply += "\nYou can further choose to : `block`, `limit content` or `skip` " \
-                     "taking any action against the user."
+                         "taking any action against the user."
                 return [reply]
 
             else:
@@ -229,6 +234,7 @@ class Report:
                 client=self.client,
                 reported_message=self.reported_message,
                 reported_message_link=self.reported_message_link,
+                reporter=self.message.author,
                 additional_info=self.additional_info
             )
             reply += "\nReport complete. Thank you!"
@@ -242,26 +248,34 @@ class Report:
 
     @classmethod
     def add_report(cls, client, reported_message, reported_message_link,
-                   additional_info=None):
-        
+                   reporter, additional_info=None):
+
         if reported_message_link in client.message_report_map:
             client.message_report_map[reported_message_link]["nreports"] += 1
+            if reporter not in \
+                    client.message_report_map[reported_message_link]["Reporters"]:
+                client.message_report_map[reported_message_link]["Reporters"].append(
+                    reporter)
             if additional_info:
                 if client.message_report_map[reported_message_link]["Additional Info"]:
-                    client.message_report_map[reported_message_link]["Additional Info"] += "\n\t" + additional_info
+                    client.message_report_map[reported_message_link][
+                        "Additional Info"] += "\n\t" + additional_info
                 else:
-                    client.message_report_map[reported_message_link]["Additional Info"] = additional_info
+                    client.message_report_map[reported_message_link][
+                        "Additional Info"] = additional_info
 
-        else:    
+        else:
             scores = client.eval_text(reported_message)
             sorted_scores = [v for k, v in
-                            sorted(scores.items(), key=lambda item: item[1], reverse=True)]
+                             sorted(scores.items(), key=lambda item: item[1],
+                                    reverse=True)]
             key = sorted_scores[0]
 
             value = {"Message": reported_message.content,
-                    "Message Link": reported_message_link,
-                    "Additional Info": additional_info,
-                    "nreports": 1}
+                     "Message Link": reported_message_link,
+                     "Additional Info": additional_info,
+                     "nreports": 1,
+                     "Reporters": [reporter]}
             client.message_report_map[reported_message_link] = value
-            
+
             client.pending_reports.put(PrioritizedItem(-key, reported_message_link))

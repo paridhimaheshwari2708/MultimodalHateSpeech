@@ -195,23 +195,68 @@ class Review:
             orig_message_author = self.message_under_review.author.name
 
             if report_counters[self.author_id] == 1:
-                reply = "%s has been warned and the message has been taken " \
+                reply = "Thank you for reviewing. %s has been warned and the message " \
+                        "%s has been taken " \
                         "down." \
                         "\n%s may have the option to re-appeal." \
-                        % (orig_message_author, orig_message_author)
+                        % (orig_message_author, self.current_report['Message Link'],
+                           orig_message_author)
+                reply_to_author = "Violating message: %s\nYou are being warned for " \
+                                  "violating the platform " \
+                                  "policies and your message has been taken down. You " \
+                                  "have the option to re-appeal."\
+                                  % self.current_report['Message Link']
+                reply_to_reporter = "We reviewed your report for the message %s and " \
+                                    "found it violating our platform policies. The " \
+                                    "message has been taken down and %s has been " \
+                                    "warned." \
+                                    % (self.current_report['Message Link'],
+                                       orig_message_author)
             elif report_counters[self.author_id] <= 5:
-                reply = "%s's acccount has been temporarily disabled on the " \
-                        "platform and the message has been taken down." \
+                reply = "Thank you for reviewing. %s's acccount has been temporarily " \
+                        "disabled on the " \
+                        "platform and the message %s has been taken down." \
                         "\n%s may have the option to re-appeal." \
-                        % (orig_message_author, orig_message_author)
+                        % (orig_message_author, self.current_report['Message Link'],
+                           orig_message_author)
+                reply_to_author = "Violating message: %s\nYour account has been " \
+                                  "temporarily disabled for " \
+                                  "violating the platform " \
+                                  "policies and your message has been taken down. You " \
+                                  "have the option to re-appeal." \
+                                  % self.current_report['Message Link']
+                reply_to_reporter = "We reviewed your report for the message %s and " \
+                                    "found it violating our platform policies. The " \
+                                    "message has been taken down and %s's account has " \
+                                    "been temporarily disabled." \
+                                    % (self.current_report['Message Link'],
+                                       orig_message_author)
             else:
-                reply = "%s's acccount has been permanently disabled due to " \
-                        "continued violations and the message has been taken down." \
+                reply = "Thank you for reviewing. %s's acccount has been permanently " \
+                        "disabled due to " \
+                        "continued violations and the message %s has been taken down." \
                         "\n%s may have the option to re-appeal." \
-                        % (orig_message_author, orig_message_author)
+                        % (orig_message_author, self.current_report['Message Link'],
+                           orig_message_author)
+                reply_to_author = "Violating message: %s\nYour account has been " \
+                                  "permanently disabled for " \
+                                  "repeated violations of the platform " \
+                                  "policies and your message has been taken down. You " \
+                                  "have the option to re-appeal." \
+                                  % self.current_report['Message Link']
+                reply_to_reporter = "We reviewed your report for the message %s and " \
+                                    "found it violating our platform policies. The " \
+                                    "message has been taken down and %s's account has " \
+                                    "been permanently disabled for repeated " \
+                                    "violations.." \
+                                    % (self.current_report['Message Link'],
+                                       orig_message_author)
             await self.mod_channel.send(reply)
+            await self.message_under_review.author.send(reply_to_author)
+            for reporter in self.current_report["Reporters"]:
+                await reporter.send(reply_to_reporter)
 
-            reply += "\n\nReview Complete. Thank You!"
+            reply += "\n\nReview Complete."
             reply = self.update_pending(reply)
 
             # self.state = State.REVIEW_COMPLETE
