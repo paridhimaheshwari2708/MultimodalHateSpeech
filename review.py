@@ -3,6 +3,7 @@ from collections import defaultdict
 from enum import Enum, auto
 
 import discord
+from report import Report
 
 
 class State(Enum):
@@ -132,13 +133,7 @@ class Review:
                 self.state = State.CHOOSE_CATEGORY
                 reply = ""
                 # TODO: Should this be an embed or as a description?
-                embed = discord.Embed(
-                    title="What category of harmful speech does the message fall under?",
-                    color=0x109319,
-                    description="`(1) race`, `(2) religion`, `(3) gender identity`, `(4) sexual orientation` and `something else`."
-                )
-                
-                embed.set_footer(text="Example: To select race, type `race` or `1`.")
+                embed = Report.hate_cat_embed()
                 return [{"content": reply, "embed": embed}]
 
             elif message.content.lower() == "none":

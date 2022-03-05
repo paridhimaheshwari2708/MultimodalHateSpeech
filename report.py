@@ -32,7 +32,27 @@ expansions = {"spam": "spam", "hate": "hate speech",
 abuse_cat = {"1": "spam", "2": "hate", "3": "harmful", "4": "misinfo", "5": "other"}
 hate_cat = {"1": "race", "2": "religion", "3": "gender identity",
             "4": "sexual orientation", "5": "something else"}
+action_cat = {"1": "block", "2": "limit content", "3": "skip"}
 
+
+def actions_embed():
+    embed = discord.Embed(
+        title="You can further choose to take the following actions to protect yourself:",
+        color=0x109319)
+
+    embed.add_field(name="(1) block",
+                value="Block this user.",
+                inline=False)
+    embed.add_field(name="(2) limit content",
+                    value="Restrict content from this user.",
+                    inline=False)
+    embed.add_field(name="(3) skip",
+                    value="If you do not wish to take any direct action against this user.",
+                    inline=False)
+
+    embed.set_footer(text="Example: To block the user, type `block` or `1`.")
+
+    return embed
 
 class Report:
     START_KEYWORD = "report"
@@ -86,6 +106,8 @@ class Report:
                 self.reported_message_link = message.content
                 reported_message = await channel.fetch_message(int(m.group(3)))
                 self.reported_message = reported_message
+                message = reported_message
+                
             except discord.errors.NotFound:
                 return [
                     "It seems this message was deleted or never existed. Please try again or say `cancel` to cancel."]
@@ -93,7 +115,6 @@ class Report:
 
         if self.state == State.MESSAGE_IDENTIFIED:
             reply = "I found this message:" + "```" + message.author.name + ": " + message.content + "```"
-            # reply += "Please tell us what is wrong with this message."
 
             embed = discord.Embed(title="Please tell us what is wrong with this message:",
                                   color=0x109319)
@@ -117,7 +138,6 @@ class Report:
                 text="Example: To report the message for hate speech, type `hate` or `2`.")
 
             self.state = State.CHOOSE_TYPE
-            # return [reply]
             return [{"content": reply, "embed": embed}]
 
         if self.state == State.CHOOSE_TYPE:
@@ -133,19 +153,14 @@ class Report:
                          "policies " \
                          "at https://support.discord.com/hc/en-us/categories" \
                          "/115000168351."
-                reply += "\nYou can further choose to : `skip`, `block` and `limit content`."
-                return [reply]
+                # reply += "\nYou can further choose to : `skip`, `block` and `limit content`."
+                embed = Report.actions_embed()
+                return [{"content": reply, "embed": embed}]
 
             elif message.content.lower() == "hate":
                 self.state = State.CHOOSE_CATEGORY
                 reply = ""
-                # TODO: Should this be an embed or as a description?
-                embed = discord.Embed(
-                    title="What category of harmful speech does the message fall under?",
-                    color=0x109319,
-                    description="`(1) race`, `(2) religion`, `(3) gender identity`, `(4) sexual orientation` and `(5) something else`."
-                )
-                embed.set_footer(text="Example: To select race, type `race` or `1`.")
+                embed = Report.hate_cat_embed()
                 return [{"content": reply, "embed": embed}]
 
             elif message.content.lower() == "other":
@@ -178,9 +193,8 @@ class Report:
                          "policies " \
                          "at https://support.discord.com/hc/en-us/categories" \
                          "/115000168351."
-                reply += "\nYou can further choose to : `block`, `limit content` or `skip` " \
-                         "taking any action against the user."
-                return [reply]
+                embed = Report.actions_embed()
+                return [{"content": reply, "embed": embed}]
 
             else:
                 return [
@@ -193,16 +207,18 @@ class Report:
                      "policies " \
                      "at https://support.discord.com/hc/en-us/categories" \
                      "/115000168351."
-            reply += "\nYou can further choose to : `block`, `limit content` or `skip` " \
-                     "taking any action against the user."
+            embed = Report.actions_embed()
             self.state = State.SUBMIT_REPORT
-            return [reply]
+            return [{"content": reply, "embed": embed}]
 
         if self.state == State.SUBMIT_REPORT:
             reply = ""
             mod_channel_msg = "Report submitted for: %s\n```Message: %s```\n" \
                               % (self.reported_message_link,
                                  self.reported_message.content)
+
+            if message.content.isdigit():
+                message.content = action_cat[message.content]
             if message.content.lower() == "skip":
                 mod_channel_msg += "%s has chosen not to take any direct action " \
                                    "against %s" \
@@ -243,6 +259,7 @@ class Report:
 
         return []
 
+    
     def report_complete(self):
         return self.state == State.REPORT_COMPLETE
 
@@ -279,3 +296,51 @@ class Report:
             client.message_report_map[reported_message_link] = value
 
             client.pending_reports.put(PrioritizedItem(-key, reported_message_link))
+
+    @classmethod
+    def hate_cat_embed(cls):
+        embed = discord.Embed(
+            title="What category of hate speech does the message fall under?",
+            color=0x109319,
+        )
+
+        embed.add_field(name="(1) race",
+                    value="The message is targeted at specific races/ethnicities.",
+                    inline=False)
+        embed.add_field(name="(2) religion",
+                        value="The message is targeted at specific religions or religious communities.",
+                        inline=False)
+        embed.add_field(name="(3) gender identity",
+                        value="The message is targeted at specific gender identities.",
+                        inline=False)
+        embed.add_field(name="(4) sexual orientation",
+                        value="The message is targeted at specific sexual orientations",
+                        inline=False)
+        embed.add_field(name="(5) something else",
+                        value="None of the above. I wish to describe the issue myself.",
+                        inline=False)
+
+        embed.set_footer(text="Example: To select race, type `race` or `1`.")
+
+        return embed
+
+    @classmethod
+    def actions_embed(cls):
+        embed = discord.Embed(
+            title="You can further choose to take the following actions to protect yourself:",
+            color=0x109319)
+
+        embed.add_field(name="(1) block",
+                    value="Block this user.",
+                    inline=False)
+        embed.add_field(name="(2) limit content",
+                        value="Restrict content from this user.",
+                        inline=False)
+        embed.add_field(name="(3) skip",
+                        value="If you do not wish to take any direct action against this user.",
+                        inline=False)
+
+        embed.set_footer(text="Example: To block the user, type `block` or `1`.")
+
+        return embed
+    
