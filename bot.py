@@ -13,6 +13,7 @@ from textblob import TextBlob
 from report import Report
 from review import Review
 
+from Classification.inference import HatefulMemesInference
 
 # Set up logging to the console
 logger = logging.getLogger('discord')
@@ -52,6 +53,8 @@ class ModBot(discord.Client):
         self.pending_reports = PriorityQueue()
         self.message_report_map = {} # Map message link to the reports
 
+        # Loading inference model
+        self.model = HatefulMemesInference('Classification')
 
     async def on_ready(self):
         print(f'{self.user.name} has connected to Discord! It is these guilds:')
@@ -156,16 +159,6 @@ class ModBot(discord.Client):
         if not message.channel.name == f'group-{self.group_num}':
             return
 
-        if len(message.attachments) > 0:
-            print("Attachments found. URL: %s." % message.attachments[
-                0].url)
-            try:
-                print("Message content: %s", message.content)
-            except:
-                print("No text along with the image.")
-        else:
-            print("No attachments found.")
-
         # Forward the message to the mod channel
         mod_channel = self.mod_channels[message.guild.id]
         # await mod_channel.send(f'Forwarded message:\n{message.author.name}: "{message.content}"')
@@ -175,10 +168,10 @@ class ModBot(discord.Client):
             k: v for k, v in sorted(scores.items(), key=lambda item: item[1], reverse=True)}
         
         # TODO: Severe toxicity is only for demo
-        auto_report_labels = ["SEVERE_TOXICITY", "IDENTITY_ATTACK", "THREAT"]
+        auto_report_labels = ["SEVERE_TOXICITY", "IDENTITY_ATTACK", "THREAT", "HATEFUL_MEME_SCORE"]
         thresh = 0.8
         for label in auto_report_labels:
-            if scores[label] > thresh:
+            if scores.get(label, 0) > thresh:
                 Report.add_report(self, message, message.jump_url)
                 await mod_channel.send(f"Message flagged by automated detection: {message.jump_url}\
                     ```Message: {message.content}```")
@@ -195,30 +188,36 @@ class ModBot(discord.Client):
         Given a message, forwards the message to Perspective and returns a dictionary of scores.
         '''
         PERSPECTIVE_URL = 'https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze'
-
         url = PERSPECTIVE_URL + '?key=' + self.perspective_key
 
-        # Decode the message if it includes unicode characters
-        decoded_message = unidecode(message.content)
-        textBlb = TextBlob(decoded_message)
-        corrected_message = textBlb.correct()
-        data_dict = {
-            'comment': {'text': str(corrected_message)},
-            'languages': ['en'],
-            'requestedAttributes': {
-                'SEVERE_TOXICITY': {}, 'PROFANITY': {},
-                'IDENTITY_ATTACK': {}, 'THREAT': {},
-                'TOXICITY': {}, 'FLIRTATION': {}
-            },
-            'doNotStore': True
-        }
-        response = requests.post(url, data=json.dumps(data_dict))
-        response_dict = response.json()
-
+        corrected_message = None
         scores = {}
-        for attr in response_dict["attributeScores"]:
-            scores[attr] = response_dict["attributeScores"][attr]["summaryScore"]["value"]
+        if message.content:
+            # Decode the message if it includes unicode characters
+            decoded_message = unidecode(message.content)
+            textBlb = TextBlob(decoded_message)
+            corrected_message = str(textBlb.correct())
+            data_dict = {
+                'comment': {'text': corrected_message},
+                'languages': ['en'],
+                'requestedAttributes': {
+                    'SEVERE_TOXICITY': {}, 'PROFANITY': {},
+                    'IDENTITY_ATTACK': {}, 'THREAT': {},
+                    'TOXICITY': {}, 'FLIRTATION': {}
+                },
+                'doNotStore': True
+            }
+            response = requests.post(url, data=json.dumps(data_dict))
+            response_dict = response.json()
 
+            for attr in response_dict["attributeScores"]:
+                scores[attr] = response_dict["attributeScores"][attr]["summaryScore"]["value"]
+
+        if message.attachments:
+            image_url = message.attachments[0].url
+            hateful_meme_score = self.model.infer(image_url, corrected_message)
+            scores['HATEFUL_MEME_SCORE'] = hateful_meme_score
+        
         return scores
 
     def code_format(self, text):
