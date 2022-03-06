@@ -52,6 +52,7 @@ class ModBot(discord.Client):
         self.pending_reports = PriorityQueue()
         self.message_report_map = {} # Map message link to the reports
 
+
     async def on_ready(self):
         print(f'{self.user.name} has connected to Discord! It is these guilds:')
         for guild in self.guilds:
@@ -154,6 +155,16 @@ class ModBot(discord.Client):
         # Only handle messages sent in the "group-#" channel
         if not message.channel.name == f'group-{self.group_num}':
             return
+
+        if len(message.attachments) > 0:
+            print("Attachments found. URL: %s." % message.attachments[
+                0].url)
+            try:
+                print("Message content: %s", message.content)
+            except:
+                print("No text along with the image.")
+        else:
+            print("No attachments found.")
 
         # Forward the message to the mod channel
         mod_channel = self.mod_channels[message.guild.id]
