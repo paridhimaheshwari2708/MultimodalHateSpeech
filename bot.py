@@ -172,8 +172,7 @@ class ModBot(discord.Client):
         thresh = 0.8
         for label in auto_report_labels:
             if scores.get(label, 0) > thresh:
-                Report.add_report(self, message, message.jump_url,
-                                  reporter=message.author)
+                Report.add_report(self, message, message.jump_url)
                 await mod_channel.send(f"Message flagged by automated detection: {message.jump_url}\
                     ```Message: {message.content}```")
                 await mod_channel.send(self.code_format(json.dumps(sorted_scores, indent=2)))

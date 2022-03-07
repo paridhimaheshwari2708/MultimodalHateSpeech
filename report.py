@@ -265,11 +265,11 @@ class Report:
 
     @classmethod
     def add_report(cls, client, reported_message, reported_message_link,
-                   reporter, additional_info=None):
+                   reporter=None, additional_info=None):
 
         if reported_message_link in client.message_report_map:
             client.message_report_map[reported_message_link]["nreports"] += 1
-            if reporter not in \
+            if reporter and reporter not in \
                     client.message_report_map[reported_message_link]["Reporters"]:
                 client.message_report_map[reported_message_link]["Reporters"].append(
                     reporter)
@@ -291,8 +291,11 @@ class Report:
             value = {"Message": reported_message.content,
                      "Message Link": reported_message_link,
                      "Additional Info": additional_info,
-                     "nreports": 1,
-                     "Reporters": [reporter]}
+                     "nreports": 1}
+            if reporter:
+                value["Reporters"] = [reporter]
+            else:
+                value["Reporters"] = []
             client.message_report_map[reported_message_link] = value
 
             client.pending_reports.put(PrioritizedItem(-key, reported_message_link))
