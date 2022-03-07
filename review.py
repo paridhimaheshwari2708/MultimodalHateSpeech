@@ -95,9 +95,10 @@ class Review:
             reply += f"This message was reported for violating our hate speech policies {self.current_report['nreports']} time(s):\n"
 
             if message.content == self.current_report["Message"]:
-                reply += f"`Message`: {message.content}\n`Message Link`: " \
-                         f"{self.current_report['Message Link']}\n`Additional Info`:\n" \
-                         f"\t{self.current_report['Additional Info']}"
+                reply += f"`Message text`: {message.content}\n"
+                reply += "`Message Link`: " \
+                         f"{self.current_report['Message Link']}\n`" \
+                         f"Additional Info`: {self.current_report['Additional Info']}"
 
             else:
                 reply += f"OriginalMessage: {self.current_report['Message']}\n"
@@ -119,6 +120,8 @@ class Review:
                             value="You wish to request additional review for this message.",
                             inline=False)
             embed.set_footer(text="Example: To report the message for hate speech, type `hate` or `1`.")
+            if "Attachment" in self.current_report:
+                embed.set_image(url=self.current_report["Attachment"])
 
             self.state = State.CHOOSE_TYPE
             return [{"content": reply, "embed": embed}]

@@ -137,6 +137,9 @@ class Report:
             embed.set_footer(
                 text="Example: To report the message for hate speech, type `hate` or `2`.")
 
+            if message.attachments:
+                embed.set_image(url=message.attachments[0])
+
             self.state = State.CHOOSE_TYPE
             return [{"content": reply, "embed": embed}]
 
@@ -296,6 +299,8 @@ class Report:
                 value["Reporters"] = [reporter]
             else:
                 value["Reporters"] = []
+            if reported_message.attachments:
+                value["Attachment"] = reported_message.attachments[0]
             client.message_report_map[reported_message_link] = value
 
             client.pending_reports.put(PrioritizedItem(-key, reported_message_link))
