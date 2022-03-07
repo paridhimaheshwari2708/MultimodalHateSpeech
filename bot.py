@@ -156,8 +156,10 @@ class ModBot(discord.Client):
 
     async def handle_channel_message(self, message):
         # Only handle messages sent in the "group-#" channel
-        if not message.channel.name or not \
-                message.channel.name == f'group-{self.group_num}':
+        try:
+            if not message.channel.name == f'group-{self.group_num}':
+                return
+        except:
             return
 
         # Forward the message to the mod channel
