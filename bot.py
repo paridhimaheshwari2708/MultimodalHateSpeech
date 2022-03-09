@@ -172,7 +172,7 @@ class ModBot(discord.Client):
         
         # TODO: Severe toxicity is only for demo
         auto_report_labels = ["SEVERE_TOXICITY", "IDENTITY_ATTACK", "THREAT", "HATEFUL_MEME_SCORE"]
-        thresh = 0.8
+        thresh = 0.0
         for label in auto_report_labels:
             if scores.get(label, 0) > thresh:
                 Report.add_report(self, message, message.jump_url)
