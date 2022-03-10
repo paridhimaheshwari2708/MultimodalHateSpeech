@@ -171,14 +171,23 @@ class ModBot(discord.Client):
             k: v for k, v in sorted(scores.items(), key=lambda item: item[1], reverse=True)}
         
         # TODO: Severe toxicity is only for demo
-        auto_report_labels = ["SEVERE_TOXICITY", "IDENTITY_ATTACK", "THREAT", "HATEFUL_MEME_SCORE"]
-        thresh = 0.0
+        auto_report_labels = ["SEVERE_TOXICITY", "IDENTITY_ATTACK", "THREAT"]
+        thresh = 0.8
+        hate_meme_thresh = 0.5
+        send_report = False
         for label in auto_report_labels:
             if scores.get(label, 0) > thresh:
-                Report.add_report(self, message, message.jump_url)
-                await mod_channel.send(f"Message flagged by automated detection: {message.jump_url}\
-                    ```Message: {message.content}```")
-                await mod_channel.send(self.code_format(json.dumps(sorted_scores, indent=2)))
+                send_report = True
+
+        if scores.get("HATEFUL_MEME_SCORE", 0) > hate_meme_thresh:
+            send_report = True
+
+        if send_report:
+            Report.add_report(self, message, message.jump_url)
+            await mod_channel.send(
+                f"Message flagged by automated detection: {message.jump_url}\
+                                ```Message: {message.content}```")
+            await mod_channel.send(self.code_format(json.dumps(sorted_scores, indent=2)))
 
     async def on_raw_message_edit(self, payload):
         channel = self.get_channel(payload.channel_id)

@@ -19,6 +19,7 @@ from mmf.common.sample import Sample, SampleList
 from mmf.datasets.processors.bert_processors import BertTokenizer
 from mmf.datasets.processors.image_processors import TorchvisionTransforms
 
+
 class HatefulMemesInference:
     def __init__(self, relative_dir, model_type='late_fusion'):
         self.model = None
