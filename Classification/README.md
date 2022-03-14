@@ -13,7 +13,7 @@ from PIL import Image
 from inference import HatefulMemesInference
 
 # Load the model
-model = HatefulMemesInference()
+model = HatefulMemesInference(relative_dir='./')
 
 # Define the local path to the image
 image_path = 'MultimodalHateSpeech/HatefulMemesDataset/img/01247.png'
@@ -24,6 +24,6 @@ if text == '':
     text = pytesseract.image_to_string(Image.open(image_path))
 
 # Get model prediction
-prob = model.infer(image_path, text)
+prob = model.test(image_path, text)
 print({'Hateful': prob})
 ```
